@@ -15,11 +15,10 @@ logging.basicConfig(
     level=logging.INFO
 )
 
-# بارگذاری کلیدها از متغیرهای محیطی
+# دریافت کلیدها از متغیرهای محیطی
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 TOGETHER_API_KEY = os.getenv("TOGETHER_API_KEY")
 
-# چک کردن اینکه متغیرهای محیطی تعریف شده‌اند
 if not TELEGRAM_TOKEN or not TOGETHER_API_KEY:
     raise ValueError("TELEGRAM_TOKEN یا TOGETHER_API_KEY تعریف نشده است.")
 
@@ -35,7 +34,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         }
 
         payload = {
-            "model": "deepseek-chat",
+            "model": "mistralai/Mistral-7B-Instruct-v0.1",
             "messages": [{"role": "user", "content": user_input}],
             "max_tokens": 500,
             "temperature": 0.7
@@ -48,6 +47,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
         result = response.json()
+        logging.info(f"Together raw response: {result}")
+
+        if "choices" not in result:
+            raise ValueError(f"Unexpected response from Together API: {result}")
+
         reply = result["choices"][0]["message"]["content"]
         await update.message.reply_text(reply)
 
